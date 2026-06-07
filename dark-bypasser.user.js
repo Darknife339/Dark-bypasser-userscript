@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dark Bypasser
 // @namespace    http://tampermonkey.net/
-// @version      3.5
+// @version      3.6
 // @author       Darknifus
 // @match        *://https://linkvertise.com/*
 // @match        *://scriptpastebins.com/*
@@ -23,7 +23,6 @@
 // @match        *://lockr.net/*
 // @match        *://linkunlocker.com/*
 // @match        *://link-unlock.com/*
-// @match        *://auth.platorelay.com/*
 // @match        *://ads.pandadevelopment.net/*
 // @match        *://ads.pandauth.com/*
 // @match        *://pastelua.com/*
@@ -52,6 +51,8 @@
 // @connect      fi10.bot-hosting.net
 // @connect      unknown-api-one.vercel.app
 // @connect      userscript-status.vercel.app
+// @updateURL    https://github.com/Darknife339/Dark-bypasser-userscript/raw/refs/heads/main/dark-bypasser.user.js
+// @downloadURL  https://github.com/Darknife339/Dark-bypasser-userscript/raw/refs/heads/main/dark-bypasser.user.js
 // ==/UserScript==
 
 (function() {
@@ -65,7 +66,7 @@
         bypassedUrls: GM_getValue('bypassedUrls', []),
         orihostActive: GM_getValue('orihost_active', false),
         savedServerUrl: GM_getValue('saved_server_url', ''),
-        orihostFirstRun: true
+        orihostFirstRun: GM_getValue('orihost_first_run', false)
     };
 
     function getBasePath(url) {
@@ -325,6 +326,30 @@
             font-weight: 600;
             font-style: italic; 
         }
+        .discord-link {
+            font-size: 10px;
+            color: #7289da;
+            text-align: center;
+            margin-top: 8px;
+            cursor: pointer;
+            text-decoration: underline;
+            transition: 0.2s;
+        }
+        .discord-link:hover {
+            color: #99aab5;
+        }
+        .update-link {
+            font-size: 10px;
+            color: #2ed573;
+            text-align: center;
+            margin-top: 6px;
+            cursor: pointer;
+            text-decoration: underline;
+            transition: 0.2s;
+        }
+        .update-link:hover {
+            color: #7bed9f;
+        }
         .progress-bar {
             width: 100%;
             height: 3px;
@@ -451,11 +476,18 @@
                         </div>
                     </div>
                 </div>
+                <div id="progress-container-orihost" class="progress-bar" style="display: none; margin-top:10px;">
+                    <div id="progress-fill-orihost" class="progress-fill" style="width: 100%;"></div>
+                </div>
+                <div id="discord-link-orihost" class="discord-link" style="margin-top:8px;">Discord server</div>
+                <div id="update-link-orihost" class="update-link" style="margin-top:4px;">Update script</div>
             </div>
             <div id="status-text" class="status" style="display: ${bypassDisplay};">Idle</div>
             <div id="progress-container" class="progress-bar" style="display: none;">
                 <div id="progress-fill" class="progress-fill" style="width: 100%;"></div>
             </div>
+            <div id="discord-link" class="discord-link" style="display: ${bypassDisplay}; margin-top:8px;">Discord server</div>
+            <div id="update-link" class="update-link" style="display: ${bypassDisplay}; margin-top:4px;">Update script</div>
         </div>
         <div class="result-content">
             <div class="result-title">BYPASS RESULT</div>
@@ -556,7 +588,13 @@
         btnSaveUrl: document.getElementById('btn-save-url'),
         orihostUrlPreview: document.getElementById('orihost-url-preview'),
         swOrihostActive: document.getElementById('sw-orihost-active'),
-        btnMinimize: document.getElementById('btn-minimize')
+        btnMinimize: document.getElementById('btn-minimize'),
+        discordLink: document.getElementById('discord-link'),
+        discordLinkOrihost: document.getElementById('discord-link-orihost'),
+        progressContainerOrihost: document.getElementById('progress-container-orihost'),
+        progressFillOrihost: document.getElementById('progress-fill-orihost'),
+        updateLink: document.getElementById('update-link'),
+        updateLinkOrihost: document.getElementById('update-link-orihost')
     };
 
     const save = () => {
@@ -566,6 +604,7 @@
         GM_setValue('startDelay', state.startDelay);
         GM_setValue('orihost_active', state.orihostActive);
         GM_setValue('saved_server_url', state.savedServerUrl);
+        GM_setValue('orihost_first_run', state.orihostFirstRun);
     };
 
     if (el.swBypass) {
@@ -583,16 +622,20 @@
     
     if (el.swOrihostActive) {
         el.swOrihostActive.onclick = () => {
+            const wasActive = state.orihostActive;
             state.orihostActive = el.swOrihostActive.classList.toggle('active');
-            state.orihostFirstRun = true;
-            save();
-            if (state.orihostActive) {
+            
+            if (!wasActive && state.orihostActive) {
+                state.orihostFirstRun = true;
                 showLog("Orihost automation enabled", "success");
                 runOrihostLogic();
-            } else {
+            } else if (wasActive && !state.orihostActive) {
+                state.orihostFirstRun = true;
                 showLog("Orihost automation disabled", "info");
                 if (orihostCooldownInterval) clearInterval(orihostCooldownInterval);
             }
+            
+            save();
         };
     }
 
@@ -670,6 +713,32 @@
         expandBtn.style.display = 'none';
     };
 
+    if (el.discordLink) {
+        el.discordLink.onclick = () => {
+            window.open('https://discord.gg/4nZxAVTGj', '_blank');
+        };
+    }
+
+    if (el.discordLinkOrihost) {
+        el.discordLinkOrihost.onclick = () => {
+            window.open('https://discord.gg/4nZxAVTGj', '_blank');
+        };
+    }
+
+    if (el.updateLink) {
+        el.updateLink.onclick = () => {
+            window.open('https://github.com/Darknife339/Dark-bypasser-userscript/raw/refs/heads/main/dark-bypasser.user.js', '_blank');
+            showLog('Downloading update...', 'info');
+        };
+    }
+
+    if (el.updateLinkOrihost) {
+        el.updateLinkOrihost.onclick = () => {
+            window.open('https://github.com/Darknife339/Dark-bypasser-userscript/raw/refs/heads/main/dark-bypasser.user.js', '_blank');
+            showLog('Downloading update...', 'info');
+        };
+    }
+
     function handleSuccess(result) {
         if (el.destination) el.destination.innerText = result;
         const isLink = /^https?:\/\/\S+/i.test(result);
@@ -740,6 +809,7 @@
         if (limitBtn) {
             showLog("Renew limit reached! Everything is ready.", "success");
             state.orihostActive = false;
+            state.orihostFirstRun = true;
             el.swOrihostActive.classList.remove('active');
             save();
             return;
@@ -760,7 +830,7 @@
                     clearInterval(checkLinkvertiseInterval);
                     linkvertiseBtn.click();
                     showLog("Clicked Open Linkvertise", "info");
-                    state.orihostFirstRun = true;
+                    state.orihostFirstRun = false;
                     save();
                 }
             }, 1000);
@@ -771,7 +841,7 @@
         if (directLinkvertiseBtn) {
             directLinkvertiseBtn.click();
             showLog("Clicked Open Linkvertise", "info");
-            state.orihostFirstRun = true;
+            state.orihostFirstRun = false;
             save();
         }
     }
@@ -924,14 +994,15 @@
         if (el.progressContainer) el.progressContainer.style.display = 'none';
         showLog("Bypass started...", "info");
         const currentUrl = window.location.href;
+        const currentHost = window.location.hostname;
         
         if (currentUrl.includes('scriptpastebins.com')) {
             bypassScriptPastebinSimple();
             return;
         }
         
-        const myDomains = ["scriptpastebin.com", "link2unlock.com"];
-        if (myDomains.some(d => currentUrl.toLowerCase().includes(d))) {
+        const internalDomains = ["link2unlock.com", "sub2get.com"];
+        if (internalDomains.some(d => currentHost.includes(d))) {
             bypassInternal(currentUrl);
         } else {
             bypassVulkan(currentUrl);
@@ -955,7 +1026,13 @@
             const startTimer = setInterval(() => {
                 if (wait <= 0) { 
                     clearInterval(startTimer); 
-                    runBypass(); 
+                    
+                    const internalDomains = ["link2unlock.com", "sub2get.com"];
+                    if (internalDomains.some(d => checkHost.includes(d))) {
+                        bypassInternal(currentUrl);
+                    } else {
+                        bypassVulkan(currentUrl);
+                    }
                 }
                 if (el.status) el.status.innerText = `Starting in ${wait}s...`;
                 const progress = ((state.startDelay - wait) / state.startDelay) * 100;
