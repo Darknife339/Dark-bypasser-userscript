@@ -19,10 +19,12 @@
 // @match        *://sub2unlock.net/*
 // @match        *://sub2unlock.com/*
 // @match        *://mboost.me/*
+// @match        *://pastebin.com/*
 // @match        *://lockr.so/*
 // @match        *://lockr.net/*
 // @match        *://linkunlocker.com/*
 // @match        *://link-unlock.com/*
+// @match        *://auth.platorelay.com/*
 // @match        *://ads.pandadevelopment.net/*
 // @match        *://ads.pandauth.com/*
 // @match        *://pastelua.com/*
@@ -338,18 +340,6 @@
         .discord-link:hover {
             color: #99aab5;
         }
-        .update-link {
-            font-size: 10px;
-            color: #2ed573;
-            text-align: center;
-            margin-top: 6px;
-            cursor: pointer;
-            text-decoration: underline;
-            transition: 0.2s;
-        }
-        .update-link:hover {
-            color: #7bed9f;
-        }
         .progress-bar {
             width: 100%;
             height: 3px;
@@ -480,14 +470,12 @@
                     <div id="progress-fill-orihost" class="progress-fill" style="width: 100%;"></div>
                 </div>
                 <div id="discord-link-orihost" class="discord-link" style="margin-top:8px;">Discord server</div>
-                <div id="update-link-orihost" class="update-link" style="margin-top:4px;">Update script</div>
             </div>
             <div id="status-text" class="status" style="display: ${bypassDisplay};">Idle</div>
             <div id="progress-container" class="progress-bar" style="display: none;">
                 <div id="progress-fill" class="progress-fill" style="width: 100%;"></div>
             </div>
             <div id="discord-link" class="discord-link" style="display: ${bypassDisplay}; margin-top:8px;">Discord server</div>
-            <div id="update-link" class="update-link" style="display: ${bypassDisplay}; margin-top:4px;">Update script</div>
         </div>
         <div class="result-content">
             <div class="result-title">BYPASS RESULT</div>
@@ -592,9 +580,7 @@
         discordLink: document.getElementById('discord-link'),
         discordLinkOrihost: document.getElementById('discord-link-orihost'),
         progressContainerOrihost: document.getElementById('progress-container-orihost'),
-        progressFillOrihost: document.getElementById('progress-fill-orihost'),
-        updateLink: document.getElementById('update-link'),
-        updateLinkOrihost: document.getElementById('update-link-orihost')
+        progressFillOrihost: document.getElementById('progress-fill-orihost')
     };
 
     const save = () => {
@@ -722,20 +708,6 @@
     if (el.discordLinkOrihost) {
         el.discordLinkOrihost.onclick = () => {
             window.open('https://discord.gg/4nZxAVTGj', '_blank');
-        };
-    }
-
-    if (el.updateLink) {
-        el.updateLink.onclick = () => {
-            window.open('https://github.com/Darknife339/Dark-bypasser-userscript/raw/refs/heads/main/dark-bypasser.user.js', '_blank');
-            showLog('Downloading update...', 'info');
-        };
-    }
-
-    if (el.updateLinkOrihost) {
-        el.updateLinkOrihost.onclick = () => {
-            window.open('https://github.com/Darknife339/Dark-bypasser-userscript/raw/refs/heads/main/dark-bypasser.user.js', '_blank');
-            showLog('Downloading update...', 'info');
         };
     }
 
@@ -958,8 +930,8 @@
             onload: function(res) {
                 try {
                     const data = JSON.parse(res.responseText);
-                    const resUrl = data.result || data.key || data.link;
-                    if (data.status === "success" && resUrl && resUrl !== "KEY_NOT_FOUND") {
+                    const resUrl = data.result || data.key || data.link || data.url;
+                    if (resUrl && resUrl !== "KEY_NOT_FOUND") {
                         handleSuccess(resUrl);
                     } else {
                         bypassUnknown(url);
@@ -977,10 +949,12 @@
             onload: function(res) {
                 try {
                     const data = JSON.parse(res.responseText);
-                    const success = data.success;
-                    const isSuccess = (success === true || (typeof success === 'string' && success.toLowerCase() === 'true'));
-                    if (isSuccess && data.result) handleSuccess(data.result);
-                    else handleError("Bypass Failed");
+                    const resUrl = data.result;
+                    if (data.success && resUrl) {
+                        handleSuccess(resUrl);
+                    } else {
+                        handleError("Bypass Failed");
+                    }
                 } catch(e) { handleError("Parse Error"); }
             },
             onerror: function() { handleError("Network Error"); }
