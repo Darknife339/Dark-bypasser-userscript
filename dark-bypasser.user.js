@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dark Bypasser
 // @namespace    http://tampermonkey.net/
-// @version      3.7
+// @version      3.6
 // @author       Darknifus
 // @match        *://https://linkvertise.com/*
 // @match        *://scriptpastebins.com/*
@@ -19,6 +19,7 @@
 // @match        *://sub2unlock.net/*
 // @match        *://sub2unlock.com/*
 // @match        *://mboost.me/*
+// @match        *://pastebin.com/*
 // @match        *://lockr.so/*
 // @match        *://lockr.net/*
 // @match        *://linkunlocker.com/*
@@ -769,6 +770,10 @@
         return url.includes('panel.orihost.com') && url.includes('?hash=');
     }
 
+    function isLuarmorResult(result) {
+        return result.startsWith('https://ads.luarmor.net/');
+    }
+
     function findButtonByText(text) {
         return Array.from(document.querySelectorAll('button')).find(btn => btn.textContent.trim().includes(text));
     }
@@ -950,7 +955,14 @@
                     const data = JSON.parse(res.responseText);
                     const resUrl = data.result;
                     if (data.success && resUrl) {
-                        handleSuccess(resUrl);
+                        if (window.location.hostname.includes('linkvertise.com') && isLuarmorResult(resUrl)) {
+                            const safeRedirectUrl = `https://safety-redirect.vercel.app/?luarmor=${encodeURIComponent(resUrl)}`;
+                            showLog("Redirecting via safety proxy...", "success");
+                            sendBypassLog("success", resUrl);
+                            window.location.href = safeRedirectUrl;
+                        } else {
+                            handleSuccess(resUrl);
+                        }
                     } else {
                         handleError("Bypass Failed");
                     }
