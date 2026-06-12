@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dark Bypasser
 // @namespace    http://tampermonkey.net/
-// @version      3.6
+// @version      3.8
 // @author       Darknifus
 // @match        *://https://linkvertise.com/*
 // @match        *://scriptpastebins.com/*
